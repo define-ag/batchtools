@@ -66,7 +66,7 @@ makeClusterFunctionsSlurm = function(template = "slurm", array.jobs = TRUE, node
       return(cfHandleUnknownSubmitError("sbatch", res$exit.code, res$output))
     }
 
-    id = stringi::stri_split_fixed(output[1L], " ")[[1L]][4L]
+    id = stri_split_fixed(output[1L], " ")[[1L]][4L]
     if (jc$array.jobs) {
       if (!array.jobs)
         stop("Array jobs not supported by cluster function")
@@ -107,6 +107,6 @@ makeClusterFunctionsSlurm = function(template = "slurm", array.jobs = TRUE, node
   }
 
   makeClusterFunctions(name = "Slurm", submitJob = submitJob, killJob = killJob, listJobsRunning = listJobsRunning,
-                       listJobsQueued = listJobsQueued, array.var = "SLURM_ARRAY_TASK_ID", store.job.collection = TRUE,
-                       store.job.files = !isLocalHost(nodename), scheduler.latency = scheduler.latency, fs.latency = fs.latency)
+       listJobsQueued = listJobsQueued, array.var = "SLURM_ARRAY_TASK_ID", store.job.collection = TRUE,
+       store.job.files = !isLocalHost(nodename), scheduler.latency = scheduler.latency, fs.latency = fs.latency)
 } # nocov end
