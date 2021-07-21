@@ -26,7 +26,7 @@
 #' @return [\code{\link{ClusterFunctions}}].
 #' @family ClusterFunctions
 #' @export
-makeClusterFunctionsSlurm = function(template = "slurm", array.jobs = TRUE, nodename = "localhost", scheduler.latency = 1, fs.latency = 65) { # nocov start
+makeClusterFunctionsSlurm = function(template = "slurm", array.jobs = TRUE, nodename = "localhost", scheduler.latency = 1, fs.latency = 80) { # nocov start
   assertFlag(array.jobs)
   assertString(nodename)
   template = findTemplateFile(template)
@@ -59,14 +59,14 @@ makeClusterFunctionsSlurm = function(template = "slurm", array.jobs = TRUE, node
         "Batch job submission failed: Job violates accounting policy (job submit limit, user's size and/or time limits)",
         "Socket timed out on send/recv operation",
         "Submission rate too high, suggest using job arrays"
-        )
+      )
       i = wf(stri_detect_fixed(output, temp.errors))
       if (length(i) == 1L)
         return(makeSubmitJobResult(status = i, batch.id = NA_character_, msg = temp.errors[i]))
       return(cfHandleUnknownSubmitError("sbatch", res$exit.code, res$output))
     }
 
-    id = stri_split_fixed(output[1L], " ")[[1L]][4L]
+    id = stringi::stri_split_fixed(output[1L], " ")[[1L]][4L]
     if (jc$array.jobs) {
       if (!array.jobs)
         stop("Array jobs not supported by cluster function")
@@ -107,6 +107,6 @@ makeClusterFunctionsSlurm = function(template = "slurm", array.jobs = TRUE, node
   }
 
   makeClusterFunctions(name = "Slurm", submitJob = submitJob, killJob = killJob, listJobsRunning = listJobsRunning,
-    listJobsQueued = listJobsQueued, array.var = "SLURM_ARRAY_TASK_ID", store.job.collection = TRUE,
-    store.job.files = !isLocalHost(nodename), scheduler.latency = scheduler.latency, fs.latency = fs.latency)
+                       listJobsQueued = listJobsQueued, array.var = "SLURM_ARRAY_TASK_ID", store.job.collection = TRUE,
+                       store.job.files = !isLocalHost(nodename), scheduler.latency = scheduler.latency, fs.latency = fs.latency)
 } # nocov end
