@@ -43,23 +43,23 @@ getStatus = function(ids = NULL, reg = getDefaultRegistry()) {
 
 getStatusTable = function(ids = NULL, batch.ids = getBatchIds(reg = reg), reg = getDefaultRegistry()) {
   submitted = started = done = error = status = NULL
-  
   stats = merge(filter(reg$status, ids), batch.ids, by = "batch.id", all.x = TRUE, all.y = FALSE, sort = FALSE)[,
-    c("log.file", "timed.out") := list(
-      getLogFiles(reg, job.id),
-      Sys.time() > submitted + reg$cluster.functions$fs.latency
-    )][, 
-      log.file.exists := !is.na(log.file) & fs::file_exists(log.file)
-    ][, list(
-    defined       = .N,
-    submitted     = count(submitted),
-    started       = sum(!is.na(started) | !is.na(status) & status == "running"),
-    done          = count(done),
-    error         = count(error),
-    queued        = sum(status == "queued", na.rm = TRUE),
-    running       = sum(status == "running", na.rm = TRUE),
-    provisioning  = sum(!is.na(submitted) & is.na(done) & is.na(status) & !log.file.exists & !is.na(log.file)),
-    expired       = sum(!is.na(submitted) & is.na(done) & is.na(status) & (log.file.exists | (is.na(log.file) & timed.out)))
+                c('log.file', 'timed.out') := list(
+                  getLogFiles(reg, job.id),
+                  Sys.time() > submitted + reg$cluster.functions$fs.latency
+                )
+               ][,
+                 log.file.exists := !is.na(log.file) & fs::file_exists(log.file)
+               ][, list(
+    defined   = .N,
+    submitted = count(submitted),
+    started   = sum(!is.na(started) | !is.na(status) & status == "running"),
+    done      = count(done),
+    error     = count(error),
+    queued    = sum(status == "queued", na.rm = TRUE),
+    provisioning = sum(!is.na(submitted) & is.na(done) & is.na(status) & !log.file.exists),
+    running   = sum(status == "running", na.rm = TRUE),
+    expired   = sum(!is.na(submitted) & is.na(done) & is.na(status) & ( ( log.file.exists & Sys.time() >  fs::file_info(log.file)$birth_time + reg$cluster.functions$fs.latency ) | ( is.na(log.file) & timed.out ) ) )
   )]
   stats$done = stats$done - stats$error
   stats$system = stats$queued + stats$provisioning + stats$running
