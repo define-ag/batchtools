@@ -37,6 +37,7 @@ waitForFile = function(fn, timeout = 0, must.work = TRUE) {
     if (fn %chin% list.files(path, all.files = TRUE))
       return(TRUE)
     if (Sys.time() > timeout) {
+      print('Timing out')
       if (must.work)
         stopf("Timeout while waiting for file '%s'", file.path(path, fn))
       return(FALSE)
